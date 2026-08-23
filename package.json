@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "node --watch-path=index.js --watch-path=inngest index.js",
+    "start": "node index.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,11 +16,13 @@
   "type": "module",
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.2.0"
+    "@types/node": "^26.2.0",
+    "prettier": "^3.9.6"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "inngest": "^4.18.1"
+    "inngest": "^4.18.1",
+    "octokit": "^5.0.5"
   }
 }

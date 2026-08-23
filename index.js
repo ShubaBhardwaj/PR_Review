@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { serve } from "inngest/express";
 import { inngest } from "./inngest/client.js";
-import { functions } from "./inngest/functions";
+import { functions } from "./inngest/functions/index.js";
 
 const app = express();
 
