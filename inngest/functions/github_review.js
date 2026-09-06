@@ -8,11 +8,11 @@ export const pullRequestReviewed = inngest.createFunction(
   },
   async ({ event, step }) => {
     // 1st step: fetch the PR details from GitHub
+    const { owner, repo, pull_number } = event.data;
 
     const pullRequestInfor = await step.run(
       'fetch-pull-request-information',
       async () => {
-        const { owner, repo, pull_number } = event.data;
         
         try {
           const pullRequestObject = await octokit.rest.pulls.get({
@@ -49,6 +49,25 @@ export const pullRequestReviewed = inngest.createFunction(
       };
     }
 
+    // 2nd step: fetch the changes
+
+    step.run('fetch-pull-request-changes', async () => {
+      const changeReslult =  await octokit.paginate(octokit.rest.pulls.listFiles, {
+        owner,
+        repo,
+        pull_number,
+      });
+
+      return changeReslult.map(change => ({
+        fileName: change.filename,
+        changeStatus: change.status,
+        changes: change.changes,
+        patch: change.patch,
+        addition: change.additions,
+        deletions: change.deletions,
+        previous_filename : change.previous_filename
+      }))
+    });
     
   }
 );
