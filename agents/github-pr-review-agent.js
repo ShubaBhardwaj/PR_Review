@@ -24,8 +24,6 @@ export const GithubReviewAgentResult = z.object({
   content: z.string().describe('Actual Content for Reply'),
 });
 
-console.log(`OpenAPI key is here: ${process.env.OPENAI_API_KEY}`);
-
 export const githubPRreviewAgent = new Agent({
   name: 'PR Review Agent',
   instructions: `
