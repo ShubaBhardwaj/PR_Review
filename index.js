@@ -17,4 +17,6 @@ app.get("/", (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
+    console.log(`OpenAPI key is here: ${process.env.OPENAI_API_KEY}`);
+    
 });
