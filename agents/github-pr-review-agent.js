@@ -16,12 +16,13 @@ export const GithubReviewAgentResult = z.object({
     .optional()
     .nullable()
     .describe('Critical Fixes if any'),
-  suggestion: z
+  suggestions: z
     .array(z.string())
     .optional()
     .nullable()
     .describe('Suggestion Fixes if any'),
   content: z.string().describe('Actual Content for Reply'),
+  event: z.enum(['APPROVE', 'COMMENT', 'REQUEST_CHANGES']),
 });
 
 export const githubPRreviewAgent = new Agent({

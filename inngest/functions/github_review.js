@@ -31,6 +31,10 @@ export const pullRequestReviewed = inngest.createFunction(
             diffURL: pullRequestObject.data.diff_url,
             commints: pullRequestObject.data.commits,
             changes: pullRequestObject.data.changed_files,
+            head: {
+              ref: pullRequestObject.data.head.ref,
+              sha: pullRequestObject.data.head.sha,
+            },
           };
         } catch (error) {
           return null;
@@ -78,16 +82,48 @@ export const pullRequestReviewed = inngest.createFunction(
       return { message: 'No changes found', skipped: true };
     }
 
-    await step.run('ai-analysis', async () => {
-      const llmResponse = await run(githubPRreviewAgent, `
+    // 3rd step: AI Analysis of the changes
+    const aiResponse = await step.run('ai-analysis', async () => {
+      const llmResponse = await run(
+        githubPRreviewAgent,
+        `
         Pull Request information:
         ${JSON.stringify(pullRequestInfor, null, 2)}
         \n\n\n
         Change:
         ${JSON.stringify(changes, null, 2)}
-        `);
+        `
+      );
 
-        return {result: llmResponse.finalOutput}
+      if (!llmResponse.finalOutput) {
+        throw new Error('The review agent did not return a result');
+      }
+
+      return { result: llmResponse.finalOutput };
+    });
+
+    // 4th step: post comment on github
+    await step.run('post-comment', async () => {
+      const { criticalFixes, suggestions, content } = aiResponse.result;
+
+      const sections = [content];
+
+      if (criticalFixes?.length)
+        sections.push(
+          `**Critical Changes:**\n${criticalFixes.map((fix) => `- ${fix}`).join('\n')}`
+        );
+
+      if (suggestions?.length)
+        sections.push(
+          `**Suggestions:**\n${suggestions.map((suggestion) => `- ${suggestion}`).join('\n')}`
+        );
+
+      await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: pull_number,
+        body: sections.join('\n\n'),
+      });
     });
   }
 );
